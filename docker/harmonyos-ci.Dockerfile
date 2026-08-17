@@ -18,8 +18,12 @@
 
 FROM ubuntu:24.04
 
-# command-line-tools linux x64 zip 的下载直链(必须通过 --build-arg 传入)
+# command-line-tools linux x64 归档的下载直链(必须通过 --build-arg 传入)
 ARG CLT_ZIP_URL
+# command-line-tools 版本号(用于 OCI version label, 可选)
+ARG CLT_VERSION=""
+# 镜像双语描述(用于 OCI description label, 按 tag 传入不同的内容)
+ARG CLT_DESC=""
 
 # 基础依赖: JDK 17 供 hap-sign-tool 签名; git/python3 供 actions/checkout 与仓库内 CI 脚本;
 # libGL/EGL/GLES + X11/GBM 等 headless 图形运行库为 SDK 资源编译器(restool/
@@ -93,11 +97,11 @@ RUN hvigorw --version
 
 # OCI 元数据: 这些 label 会显示在 GitHub Package 页面(ghcr.io)的描述区。
 # OCI labels: these populate the GitHub Package (ghcr.io) page description.
-LABEL org.opencontainers.image.title="harmonyos-ci (HarmonyOS NEXT API 26 构建镜像 / CI build image)" \
-      org.opencontainers.image.description="无 DevEco Studio 的 HarmonyOS NEXT (API 26) 云端构建镜像: command-line-tools 26.0.0.461 + hvigor + ohpm + SDK + hap-sign-tool。 / Build HarmonyOS NEXT (API 26) HAPs in CI without DevEco Studio: command-line-tools 26.0.0.461 + hvigor + ohpm + SDK + hap-sign-tool." \
-      org.opencontainers.image.version="26.0.0.461" \
-      org.opencontainers.image.source="https://github.com/DaLongZhuaZi/NGF" \
-      org.opencontainers.image.documentation="https://github.com/DaLongZhuaZi/NGF/blob/main/docker/README.md" \
+LABEL org.opencontainers.image.title="harmonyos-ci (HarmonyOS 构建镜像 / HarmonyOS CI images)" \
+      org.opencontainers.image.description="${CLT_DESC}" \
+      org.opencontainers.image.version="${CLT_VERSION}" \
+      org.opencontainers.image.source="https://github.com/DaLongZhuaZi/harmonyos-ci" \
+      org.opencontainers.image.documentation="https://github.com/DaLongZhuaZi/harmonyos-ci" \
       org.opencontainers.image.licenses="MIT"
 
 WORKDIR /workspace

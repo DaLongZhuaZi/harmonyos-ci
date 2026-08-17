@@ -64,6 +64,21 @@ jobs:
           owner=$(printf '%s' "$OWNER" | tr 'A-Z' 'a-z')
           echo "image=ghcr.io/${owner}/harmonyos-ci:${TAG}" >> "$GITHUB_OUTPUT"
 
+      - name: 解析镜像描述(按版本) / Resolve per-version description
+        id: desc
+        env:
+          TAG: ${{ inputs.image_tag }}
+          VER: ${{ inputs.clt_version }}
+        run: |
+          case "$TAG" in
+            api23)   D="HarmonyOS 6.1.0 / API 23 构建镜像 / build image, command-line-tools 6.1.0.818";;
+            api24)   D="HarmonyOS 6.1.1 / API 24 构建镜像 / build image, command-line-tools 6.1.1.300";;
+            api26)   D="HarmonyOS 26.0.0 / API 26 Beta1 构建镜像 / build image, command-line-tools 26.0.0.461";;
+            api26b2) D="HarmonyOS 26.0.0 / API 26 Beta2 构建镜像 / build image, command-line-tools 26.0.0.621";;
+            *)       D="HarmonyOS 构建镜像 / build image, command-line-tools ${VER:-unknown}";;
+          esac
+          echo "desc=$D" >> "$GITHUB_OUTPUT"
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -84,6 +99,8 @@ jobs:
           push: true
           build-args: |
             CLT_ZIP_URL=${{ steps.url.outputs.url }}
+            CLT_VERSION=${{ inputs.clt_version }}
+            CLT_DESC=${{ steps.desc.outputs.desc }}
           tags: ${{ steps.img.outputs.image }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
