@@ -4,9 +4,11 @@ name: Build CI image
 # 本仓库是工具链镜像的统一归宿: 一个 package(ghcr.io/<owner>/harmonyos-ci)承载多个
 # tag(api23 / api26 / ...), 供 NGF / ASFWorkshop / Coder 等所有仓库复用。
 # 镜像保持 public(匿名可拉); 消费方 build.yml 按 API 版本引用对应 tag。
+# 每次构建成功后会发布一个正式 Release(非 prerelease)作为构建公告。
 #
 # 用法(workflow_dispatch):
 #   clt_zip_url: command-line-tools 分片直链(空格分隔, 可附 .sha256 校验)
+#   clt_version: command-line-tools 版本号(用于 release 记录, 可选)
 #   image_tag:   目标 tag(如 api23 / api26 / 将来的 api24)
 
 on:
@@ -16,13 +18,17 @@ on:
         description: 'command-line-tools 分片直链(空格分隔, 可附 .sha256 校验 URL)'
         required: false
         default: ''
+      clt_version:
+        description: 'command-line-tools 版本号(用于 release 记录, 如 6.1.0.818)'
+        required: false
+        default: ''
       image_tag:
         description: '镜像 tag(如 api23 / api26)'
         required: true
         default: 'api26'
 
 permissions:
-  contents: read
+  contents: write
   packages: write
 
 jobs:
@@ -81,3 +87,34 @@ jobs:
           tags: ${{ steps.img.outputs.image }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      # 构建成功后发布一个正式 Release(非 prerelease)作为「构建公告」, 记录本次构建情况。
+      # 同名 tag 的旧 release 先删后建, 使该 tag 的 release 始终指向最新一次构建。
+      - name: 发布构建公告 Release / Publish build release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          IMG_TAG: ${{ inputs.image_tag }}
+          CLT_VER: ${{ inputs.clt_version }}
+          SHA: ${{ github.sha }}
+        run: |
+          CLT_VER="${CLT_VER:-未记录/n-a}"
+          cat > /tmp/note.md <<EOF
+          ## 镜像构建成功 / Image built
+
+          本次在 harmonyos-ci 仓库构建了 HarmonyOS 构建镜像(正式公告 Release, 非 prerelease)。
+          Built a HarmonyOS build image in the harmonyos-ci repo (release announcement, not prerelease).
+
+          - 镜像 tag / Image tag: ${IMG_TAG}
+          - 完整地址 / Image ref: ghcr.io/dalongzhuazi/harmonyos-ci:${IMG_TAG}
+          - command-line-tools 版本 / version: ${CLT_VER}
+          - 提交 / Commit: ${SHA}
+          - 状态 / Status: 构建成功 / built OK
+
+          > 镜像 public、匿名可拉, 供 NGF / ASFWorkshop / Coder 等仓库复用。
+          > This image is public and pullable anonymously for reuse.
+          EOF
+          gh release delete "${IMG_TAG}" --cleanup-tag --yes 2>/dev/null || true
+          gh release create "${IMG_TAG}" \
+            --target "${SHA}" \
+            --title "镜像构建: ${IMG_TAG} / image built" \
+            --notes-file /tmp/note.md
