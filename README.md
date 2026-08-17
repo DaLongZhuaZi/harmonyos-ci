@@ -8,7 +8,9 @@ This repo maintains the command-line-tools Docker images used to build HarmonyOS
 
 | Tag | command-line-tools | 适用 SDK / For SDK | 消费者 / Consumers |
 |---|---|---|---|
-| `api26` | 26.0.0.461 | HarmonyOS 26.0.0（API 26） | NGF、ASFWorkshop |
+| `api26` | 26.0.0.461 | HarmonyOS 26.0.0（API 26 Beta1） | NGF、ASFWorkshop |
+| `api26b2` | 26.0.0.621 | HarmonyOS 26.0.0（API 26 Beta2） | — |
+| `api24` | 6.1.1.300 | HarmonyOS 6.1.1（API 24） | — |
 | `api23` | 6.1.0.818 | HarmonyOS 6.1.0（API 23） | Coder |
 
 Package 地址 / Package URL: https://github.com/DaLongZhuaZi/NGF/pkgs/container/harmonyos-ci

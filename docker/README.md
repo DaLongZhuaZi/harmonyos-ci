@@ -9,7 +9,9 @@ These images build HarmonyOS apps **without DevEco Studio** inside GitHub Action
 
 | Tag | command-line-tools | 适用 SDK / For SDK | 消费者 / Consumers |
 |---|---|---|---|
-| `api26` | 26.0.0.461 | HarmonyOS 26.0.0（API 26） | NGF、ASFWorkshop |
+| `api26` | 26.0.0.461 | HarmonyOS 26.0.0（API 26 Beta1） | NGF、ASFWorkshop |
+| `api26b2` | 26.0.0.621 | HarmonyOS 26.0.0（API 26 Beta2） | — |
+| `api24` | 6.1.1.300 | HarmonyOS 6.1.1（API 24） | — |
 | `api23` | 6.1.0.818 | HarmonyOS 6.1.0（API 23） | Coder |
 
 两个 tag 均 `public`，任何仓库可匿名拉取（复用）。
