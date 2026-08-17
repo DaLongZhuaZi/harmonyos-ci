@@ -26,6 +26,8 @@ harmonyos-ci/
 
 ## 构建新 tag / Building a tag
 
+**前置**：在仓库 Secrets 配置 `GHCR_PAT`（一个 user 级 Personal Access Token，scope 至少 `write:packages`）。因 `ghcr.io/dalongzhuazi/harmonyos-ci` 这个 package 由 NGF 仓库首次创建，跨仓库写同名 package 需用 PAT 而非 repo-scoped 的 GITHUB_TOKEN。
+
 1. 取得与目标 API 匹配的 Linux (x86-64) command-line-tools 分片直链（社区镜像或华为官方）。
 2. 运行本仓库的 **Build CI image** workflow（workflow_dispatch）：
    - `clt_zip_url`：分片直链，空格分隔（可附 `.sha256` 校验 URL）
