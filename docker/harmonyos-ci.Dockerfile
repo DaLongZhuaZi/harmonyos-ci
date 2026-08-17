@@ -65,9 +65,10 @@ RUN set -eux; \
     fi; \
     mkdir -p out; \
     case "$ARCHIVE" in *.tar.gz) tar -xzf "$ARCHIVE" -C out;; *) unzip -q "$ARCHIVE" -d out;; esac; \
-    CLTDIR=$(find out -maxdepth 2 -type d -name command-line-tools | head -n1); \
-    test -n "$CLTDIR"; \
-    mv "$CLTDIR" /opt/command-line-tools; \
+    HVIGORW=$(find out -maxdepth 5 -type f -name hvigorw -path '*/bin/*' | head -n1); \
+    test -n "$HVIGORW"; \
+    CLTROOT=$(dirname "$(dirname "$HVIGORW")"); \
+    mv "$CLTROOT" /opt/command-line-tools; \
     ls -la /opt/command-line-tools/bin/; \
     test -x /opt/command-line-tools/bin/hvigorw; \
     test -d /opt/command-line-tools/sdk; \
