@@ -1,0 +1,81 @@
+name: Build CI image
+
+# 构建 HarmonyOS command-line-tools CI 镜像并推送 ghcr.io。
+# 本仓库是工具链镜像的统一归宿: 一个 package(ghcr.io/<owner>/harmonyos-ci)承载多个
+# tag(api23 / api26 / ...), 供 NGF / ASFWorkshop / Coder 等所有仓库复用。
+# 镜像保持 public(匿名可拉); 消费方 build.yml 按 API 版本引用对应 tag。
+#
+# 用法(workflow_dispatch):
+#   clt_zip_url: command-line-tools 分片直链(空格分隔, 可附 .sha256 校验)
+#   image_tag:   目标 tag(如 api23 / api26 / 将来的 api24)
+
+on:
+  workflow_dispatch:
+    inputs:
+      clt_zip_url:
+        description: 'command-line-tools 分片直链(空格分隔, 可附 .sha256 校验 URL)'
+        required: false
+        default: ''
+      image_tag:
+        description: '镜像 tag(如 api23 / api26)'
+        required: true
+        default: 'api26'
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-and-push:
+    name: Build & push harmonyos-ci image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve command-line-tools URL
+        id: url
+        env:
+          INPUT_URL: ${{ inputs.clt_zip_url }}
+          SECRET_URL: ${{ secrets.CLT_ZIP_URL }}
+        run: |
+          url="$INPUT_URL"
+          if [ -z "$url" ]; then
+            url="$SECRET_URL"
+          fi
+          if [ -z "$url" ]; then
+            echo "::error::需要 inputs.clt_zip_url 或 secret CLT_ZIP_URL"
+            exit 1
+          fi
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+
+      - name: Resolve lowercase image name
+        id: img
+        env:
+          OWNER: ${{ github.repository_owner }}
+          TAG: ${{ inputs.image_tag }}
+        run: |
+          owner=$(printf '%s' "$OWNER" | tr 'A-Z' 'a-z')
+          echo "image=ghcr.io/${owner}/harmonyos-ci:${TAG}" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to ghcr.io
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build & push
+        uses: docker/build-push-action@v6
+        with:
+          context: ./docker
+          file: docker/harmonyos-ci.Dockerfile
+          push: true
+          build-args: |
+            CLT_ZIP_URL=${{ steps.url.outputs.url }}
+          tags: ${{ steps.img.outputs.image }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
