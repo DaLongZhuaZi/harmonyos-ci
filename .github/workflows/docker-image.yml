@@ -128,15 +128,24 @@ jobs:
 
       # 构建成功后发布一个正式 Release(非 prerelease)作为「构建公告」, 记录本次构建情况。
       # 同名 tag 的旧 release 先删后建, 使该 tag 的 release 始终指向最新一次构建。
+      # 说明: 本仓库 Actions 的默认 GITHUB_TOKEN 权限为 read(组织/仓库设置),
+      # 仅靠 permissions: contents: write 在部分配置下仍会得到
+      # "Resource not accessible by integration" (HTTP 403)。
+      # 因此优先用 GHCR_PAT(已具备 repo + write:packages), 回退到 GITHUB_TOKEN。
+      # Note: the repo's default GITHUB_TOKEN is read-only, so releasing via the
+      # built-in token can 403. Prefer GHCR_PAT, fall back to GITHUB_TOKEN.
+      # 镜像已经推送成功, 公告 Release 只是附加动作; 失败不应把整次构建标红。
+      # The image is already pushed; a failed announcement must not fail the build.
       - name: 发布构建公告 Release / Publish build release
+        continue-on-error: true
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.GHCR_PAT || github.token }}
           IMG_TAG: ${{ inputs.image_tag }}
           CLT_VER: ${{ inputs.clt_version }}
           SHA: ${{ github.sha }}
         run: |
           CLT_VER="${CLT_VER:-未记录/n-a}"
-          cat > /tmp/note.md <<EOF
+          cat > /tmp/note.md <<'EOF'
           ## 镜像构建成功 / Image built
 
           本次在 harmonyos-ci 仓库构建了 HarmonyOS 构建镜像(正式公告 Release, 非 prerelease)。
