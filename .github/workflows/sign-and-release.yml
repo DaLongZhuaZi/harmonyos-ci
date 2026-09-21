@@ -38,11 +38,34 @@ defaults:
 
 env:
   # ← 唯一需要按项目修改的地方 / the only line to adapt per project
-  CI_IMAGE: ghcr.io/dalongzhuazi/harmonyos-ci:api26
+  CI_IMAGE: ghcr.io/dalongzhuazi/harmonyos-ci:api26r
   HAP_SIGN_TOOL: /opt/command-line-tools/sdk/default/openharmony/toolchains/lib/hap-sign-tool.jar
 
 jobs:
+  # 防呆 / Guard: 同 build.yml, 非 HarmonyOS 工程仓库直接跳过。
+  # Guard: same as build.yml - skip cleanly in non-project repos.
+  guard:
+    name: 检查是否 HarmonyOS 工程 / Detect HarmonyOS project
+    runs-on: ubuntu-latest
+    outputs:
+      is_project: ${{ steps.check.outputs.is_project }}
+    steps:
+      - name: Checkout 检出代码 / Checkout
+        uses: actions/checkout@v4
+
+      - name: 判定工程标志文件 / Check project markers
+        id: check
+        run: |
+          if [ -f build-profile.json5 ] && [ -f oh-package.json5 ]; then
+            echo "is_project=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "is_project=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::非 HarmonyOS 工程仓库, 跳过。/ Not a HarmonyOS project - skipping."
+          fi
+
   prepare:
+    needs: guard
+    if: needs.guard.outputs.is_project == 'true'
     name: 解析镜像与签名材料 / Resolve image & signing material
     runs-on: ubuntu-latest
     outputs:

@@ -30,7 +30,7 @@ on:
   workflow_dispatch:
     inputs:
       image:
-        description: '覆盖 CI 镜像 / Override CI image (ghcr.io/owner/harmonyos-ci:api26)'
+        description: '覆盖 CI 镜像 / Override CI image (ghcr.io/owner/harmonyos-ci:<tag>)'
         required: false
         default: ''
 
@@ -48,10 +48,37 @@ defaults:
 
 env:
   # ← 唯一需要按项目修改的地方 / the only line to adapt per project
-  CI_IMAGE: ghcr.io/dalongzhuazi/harmonyos-ci:api26
+  CI_IMAGE: ghcr.io/dalongzhuazi/harmonyos-ci:api26r
 
 jobs:
+  # 防呆 / Guard: 本 workflow 属于「HarmonyOS 应用工程仓库」。
+  # 若被留在 harmonyos-ci 这类只有镜像和文档的仓库里, 每次 push 都会因为找不到
+  # build-profile.json5 而变红。这里先判定, 非工程就直接跳过而不是误报失败。
+  # This workflow belongs in an app project repo. In a repo without a HarmonyOS
+  # project it would fail on every push - detect and skip cleanly instead.
+  guard:
+    name: 检查是否 HarmonyOS 工程 / Detect HarmonyOS project
+    runs-on: ubuntu-latest
+    outputs:
+      is_project: ${{ steps.check.outputs.is_project }}
+    steps:
+      - name: Checkout 检出代码 / Checkout
+        uses: actions/checkout@v4
+
+      - name: 判定工程标志文件 / Check project markers
+        id: check
+        run: |
+          if [ -f build-profile.json5 ] && [ -f oh-package.json5 ]; then
+            echo "is_project=true" >> "$GITHUB_OUTPUT"
+            echo "OK: HarmonyOS 工程 / project detected"
+          else
+            echo "is_project=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::未找到 build-profile.json5 + oh-package.json5, 跳过构建。本 workflow 需复制到 HarmonyOS 应用工程仓库使用。/ Not a HarmonyOS project - skipping."
+          fi
+
   prepare:
+    needs: guard
+    if: needs.guard.outputs.is_project == 'true'
     name: 解析 CI 镜像 / Resolve CI image
     runs-on: ubuntu-latest
     outputs:
