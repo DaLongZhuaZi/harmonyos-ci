@@ -145,7 +145,7 @@ jobs:
           SHA: ${{ github.sha }}
         run: |
           CLT_VER="${CLT_VER:-未记录/n-a}"
-          cat > /tmp/note.md <<'EOF'
+          cat > /tmp/note.md <<EOF
           ## 镜像构建成功 / Image built
 
           本次在 harmonyos-ci 仓库构建了 HarmonyOS 构建镜像(正式公告 Release, 非 prerelease)。
@@ -160,8 +160,8 @@ jobs:
           > 镜像 public、匿名可拉, 供 NGF / ASFWorkshop / Coder 等仓库复用。
           > This image is public and pullable anonymously for reuse.
 
-          > 想要签名的安装包请见消费方仓库的 `sign-and-release.yml`(hap-sign-tool)。
-          > For signed packages see the consumer repo's `sign-and-release.yml` (hap-sign-tool).
+          > 想要签名的安装包请见消费方仓库的 \`sign-and-release.yml\`(hap-sign-tool)。
+          > For signed packages see the consumer repo's \`sign-and-release.yml\` (hap-sign-tool).
           EOF
           gh release delete "${IMG_TAG}" --cleanup-tag --yes 2>/dev/null || true
           gh release create "${IMG_TAG}" \
