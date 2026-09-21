@@ -17,7 +17,7 @@ These images build HarmonyOS apps **without DevEco Studio** inside GitHub Action
 
 **新工程用 `api26r`**：`26.0.0.821` 与 DevEco Studio 26 Release 内置 SDK（`build.txt`
 `DS-261.23567.138.305.2600821`，SDK `26.0.0.105` / apiVersion 26 / Release）一致，
-工程 `compatibleSdkVersion` 写 `26.0.0(26)`。
+工程 `compatibleSdkVersion` 写 `26.0.0`（**实测必须写这个形式**；写成 `26.0.0(26)` 会被 hvigor 拒绝：`api version parameter is illegal`）。
 
 所有 tag 均 `public`，任何仓库可匿名拉取（复用）。
 All tags are `public` and pullable anonymously (reusable across repos).

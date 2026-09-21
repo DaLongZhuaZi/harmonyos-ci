@@ -14,9 +14,23 @@ This repo maintains the command-line-tools Docker images used to build HarmonyOS
 | `api24` | 6.1.1.300 | HarmonyOS 6.1.1（API 24） | ErBWs/ohos-sdk |
 | `api23` | 6.1.0.818 | HarmonyOS 6.1.0（API 23） | [ErBWs/ohos-sdk](https://github.com/ErBWs/ohos-sdk/releases/tag/6.1.0.818) |
 
-**新工程默认用 `api26r`**（API 26 正式版，与 DevEco Studio 26 Release 内置 SDK 一致，`compatibleSdkVersion` 写 `26.0.0(26)`）。
+**新工程默认用 `api26r`**（API 26 正式版）。
 Package 地址 / Package URL：https://github.com/DaLongZhuaZi/harmonyos-ci/pkgs/container/harmonyos-ci
-（镜像名 `ghcr.io/dalongzhuazi/harmonyos-ci`，public，匿名可拉取复用。）
+（镜像名 `ghcr.io/dalongzhuazi/harmonyos-ci`，public，匿名可拉取复用，已实测 `docker pull` 免登录成功。）
+
+### 已发布 tag / Published tags
+
+| Tag | command-line-tools | 发布 Release | 说明 |
+|---|---|---|---|
+| `api26r` | 26.0.0.821 | [镜像构建: api26r](https://github.com/DaLongZhuaZi/harmonyos-ci/releases/tag/api26r) | **API 26 正式版，推荐** |
+| `api26b2` | 26.0.0.621 | [api26b2](https://github.com/DaLongZhuaZi/harmonyos-ci/releases/tag/api26b2) | API 26 Beta2 |
+| `api26` | 26.0.0.461 | [api26](https://github.com/DaLongZhuaZi/harmonyos-ci/releases/tag/api26) | API 26 Beta1 |
+| `api24` | 6.1.1.300 | [api24](https://github.com/DaLongZhuaZi/harmonyos-ci/releases/tag/api24) | API 24 |
+| `api23` | 6.1.0.818 | [api23](https://github.com/DaLongZhuaZi/harmonyos-ci/releases/tag/api23) | API 23 |
+
+> `api26r` 已本地端到端验证：容器内 `ohpm install --all` + `hvigorw assembleHap` 成功产出
+> `entry-default-unsigned.hap`（112,803 字节，PK 魔数，13 条目，`minAPIVersion=260000026`）。
+> `api26r` has been verified end-to-end locally: a real HAP is produced inside the image.
 
 ## 目录 / Layout
 
@@ -30,7 +44,7 @@ harmonyos-ci/
 │   ├── build.yml                    # 消费方模板：构建未签名 HAP + 滚动 nightly Release
 │   └── sign-and-release.yml         # 消费方模板：签名 + 版本化 Release
 ├── .github/scripts/strip_signing.py # 剥离本机签名配置（产出未签名 HAP）
-├── docs/CI_Guide.md                 # 完整中文指南
+├── docs/CI_Guide.md                 # 完整中文指南（构建 / 签名 / 排障 / 维护）
 ├── docs/CI_Guide.en.md              # 完整英文指南
 └── README.md
 ```

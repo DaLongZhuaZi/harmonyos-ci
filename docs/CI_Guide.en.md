@@ -123,6 +123,8 @@ Signing uses the official tool at a fixed path inside the image (needs JDK 17, a
 | `libGL.so.1: cannot open shared object file` | Bare container lacks OpenGL; this image bundles `libgl1/libegl1/libgles2`, so use it |
 | `shopt: not found` | Runner default `sh` (dash) lacks `shopt`; workflows set `defaults.run.shell: bash` |
 | hvigor version mismatch / unsupported model version | command-line-tools does not match `compatibleSdkVersion`; switch tag (API 26 release = `api26r`) |
+| `api version parameter is illegal! Expected format: <major>[.<minor>][.<patch>]` | The project uses the bracketed form `26.0.0(26)`. **API 26 projects must use `"compatibleSdkVersion": "26.0.0"`** (verified inside the image: `26.0.0(26)`, `26`, and numeric `26` are all rejected - only `26.0.0` compiles) |
+| `The modelVersion in hvigor-config.json5 is X, and the modelVersion in oh-package.json5 is Y` | `modelVersion` must match across `oh-package.json5` and `hvigor/hvigor-config.json5`; use `26.0.0` for API 26 projects |
 | Errors about missing certs / `signingConfigs` | `strip_signing.py` was not run, or `build-profile.json5` is not at the repo root |
 | Image pull fails | Check the tag spelling; the image is public. Built tags appear on this repo's Releases page |
 | `entry-default-unsigned.hap` won't install | Unsigned HAPs must be signed first (DevEco Studio or hap-sign-tool) |

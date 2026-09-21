@@ -122,6 +122,8 @@ push `v*` tag 触发 `sign-and-release.yml`。所需 Secrets(证书文件 base64
 | `libGL.so.1: cannot open shared object file` | 裸容器缺 OpenGL 库; 本镜像已内置 `libgl1/libegl1/libgles2` 等, 用本镜像即可 |
 | `shopt: not found` | runner 默认 sh(dash) 无 `shopt`; workflow 已设 `defaults.run.shell: bash` |
 | `hvigor 版本不匹配 / unsupported model version` | command-line-tools 与工程 `compatibleSdkVersion` 不匹配; 换对应 tag(如 API 26 正式版用 `api26r`) |
+| `api version parameter is illegal! Expected format: <major>[.<minor>][.<patch>]` | 工程 `compatibleSdkVersion` 用了带括号形式 `26.0.0(26)`。**API 26 工程必须写 `"compatibleSdkVersion": "26.0.0"`**(镜像内实测: `26.0.0(26)` / `26` / 数字 `26` 全被拒绝, 只有 `26.0.0` 能进编译) |
+| `The modelVersion in hvigor-config.json5 is X, and the modelVersion in oh-package.json5 is Y` | 两处 `modelVersion` 必须一致: `oh-package.json5` 与 `hvigor/hvigor-config.json5`; API 26 工程统一写 `26.0.0` |
 | 构建报找不到证书/`signingConfigs` 相关错误 | 没跑 `strip_signing.py`, 或 `build-profile.json5` 路径不是仓库根 |
 | 镜像拉取失败 | 确认 tag 拼写; 镜像 public, 匿名可拉。tag 是否已构建见本仓库 Releases 页 |
 | `entry-default-unsigned.hap` 无法安装 | 未签名 HAP 需先签名(DevEco Studio 或 hap-sign-tool) |
