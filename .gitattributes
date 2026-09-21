@@ -1,0 +1,27 @@
+# 统一换行符, 避免 Windows 检出后破坏 Dockerfile / shell 脚本。
+# Normalize line endings so a Windows checkout does not break the Dockerfile/scripts.
+#
+# 关键: Dockerfile 里的 "\" 续行在 CRLF 下会变成 "\r", 导致构建报
+# "Missing expression after unary operator" 之类的语法错误; shell 脚本同理。
+# CRITICAL: a CRLF Dockerfile turns "\" continuations into "\r" and breaks the build.
+* text=auto eol=lf
+
+*.Dockerfile text eol=lf
+Dockerfile     text eol=lf
+*.yml          text eol=lf
+*.yaml         text eol=lf
+*.py           text eol=lf
+*.sh           text eol=lf
+*.md           text eol=lf
+*.json         text eol=lf
+*.json5        text eol=lf
+.gitignore     text eol=lf
+.gitattributes text eol=lf
+
+# 二进制 / binary
+*.png binary
+*.jpg binary
+*.ico binary
+*.zip binary
+*.gz  binary
+*.jar binary

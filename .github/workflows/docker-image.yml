@@ -2,14 +2,15 @@ name: Build CI image
 
 # 构建 HarmonyOS command-line-tools CI 镜像并推送 ghcr.io。
 # 本仓库是工具链镜像的统一归宿: 一个 package(ghcr.io/<owner>/harmonyos-ci)承载多个
-# tag(api23 / api26 / ...), 供 NGF / ASFWorkshop / Coder 等所有仓库复用。
+# tag(api23 / api24 / api26b2 / api26r / ...), 供 NGF / ASFWorkshop / Coder 等所有仓库复用。
 # 镜像保持 public(匿名可拉); 消费方 build.yml 按 API 版本引用对应 tag。
 # 每次构建成功后会发布一个正式 Release(非 prerelease)作为构建公告。
 #
 # 用法(workflow_dispatch):
 #   clt_zip_url: command-line-tools 分片直链(空格分隔, 可附 .sha256 校验)
 #   clt_version: command-line-tools 版本号(用于 release 记录, 可选)
-#   image_tag:   目标 tag(如 api23 / api26 / 将来的 api24)
+#   image_tag:   目标 tag(如 api26r / api24), 必须是下方「已知 tag」之一
+#   ref:         从哪个 git ref 构建镜像(默认 main)
 
 on:
   workflow_dispatch:
@@ -19,13 +20,17 @@ on:
         required: false
         default: ''
       clt_version:
-        description: 'command-line-tools 版本号(用于 release 记录, 如 6.1.0.818)'
+        description: 'command-line-tools 版本号(用于 release 记录, 如 26.0.0.821)'
         required: false
         default: ''
       image_tag:
-        description: '镜像 tag(如 api23 / api26)'
+        description: '镜像 tag(如 api26r / api24), 须为已知 tag'
         required: true
-        default: 'api26'
+        default: ''
+      ref:
+        description: '构建所用的 git ref / git ref to build from'
+        required: false
+        default: 'main'
 
 permissions:
   contents: write
@@ -38,6 +43,21 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: 校验镜像 tag / Validate image tag
+        env:
+          TAG: ${{ inputs.image_tag }}
+        run: |
+          case "$TAG" in
+            api26r|api26b2|api26|api24|api23) ;;
+            *)
+              echo "::error::未知 tag '$TAG'。请在 workflow 的 desc 步骤与本步骤中一并登记新 tag, 再构建。/ Unknown tag - register it first."
+              exit 1
+              ;;
+          esac
+          echo "OK: $TAG"
 
       - name: Resolve command-line-tools URL
         id: url
@@ -71,10 +91,11 @@ jobs:
           VER: ${{ inputs.clt_version }}
         run: |
           case "$TAG" in
-            api23)   D="HarmonyOS 6.1.0 / API 23 构建镜像 / build image, command-line-tools 6.1.0.818";;
-            api24)   D="HarmonyOS 6.1.1 / API 24 构建镜像 / build image, command-line-tools 6.1.1.300";;
-            api26)   D="HarmonyOS 26.0.0 / API 26 Beta1 构建镜像 / build image, command-line-tools 26.0.0.461";;
+            api26r)  D="HarmonyOS 26.0.0 / API 26 正式版 构建镜像 / build image, command-line-tools 26.0.0.821";;
             api26b2) D="HarmonyOS 26.0.0 / API 26 Beta2 构建镜像 / build image, command-line-tools 26.0.0.621";;
+            api26)   D="HarmonyOS 26.0.0 / API 26 Beta1 构建镜像 / build image, command-line-tools 26.0.0.461";;
+            api24)   D="HarmonyOS 6.1.1 / API 24 构建镜像 / build image, command-line-tools 6.1.1.300";;
+            api23)   D="HarmonyOS 6.1.0 / API 23 构建镜像 / build image, command-line-tools 6.1.0.818";;
             *)       D="HarmonyOS 构建镜像 / build image, command-line-tools ${VER:-unknown}";;
           esac
           echo "desc=$D" >> "$GITHUB_OUTPUT"
@@ -129,6 +150,9 @@ jobs:
 
           > 镜像 public、匿名可拉, 供 NGF / ASFWorkshop / Coder 等仓库复用。
           > This image is public and pullable anonymously for reuse.
+
+          > 想要签名的安装包请见消费方仓库的 `sign-and-release.yml`(hap-sign-tool)。
+          > For signed packages see the consumer repo's `sign-and-release.yml` (hap-sign-tool).
           EOF
           gh release delete "${IMG_TAG}" --cleanup-tag --yes 2>/dev/null || true
           gh release create "${IMG_TAG}" \

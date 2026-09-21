@@ -1,0 +1,20 @@
+# 构建缓存 / local build cache (下载的 command-line-tools 归档, 绝不入库)
+.build-cache/
+*.part
+*.tar.gz.aa
+*.tar.gz.ab
+*.zip.part*
+
+# 本地构建产物 / local build outputs
+dist/
+out/
+
+# 编辑器与系统 / editor & OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+# 本地离线构建用的 command-line-tools 归档(2GB+, 绝不入库)
+# command-line-tools archives for offline builds - never committed
+docker/local-archive/*
+!docker/local-archive/.gitkeep
